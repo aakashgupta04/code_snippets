@@ -1,0 +1,43 @@
+#How we can add dependency between a weekly and a daily running dags 
+
+#importing required library
+from datetime import datetime 
+from airflow import DAG
+from airflow.sensors.external_task import ExternalTaskSensor
+from airflow.operators.dummy import DummyOperator
+#getting today’s weekday
+week_day=datetime.today()-1
+#defining dag 
+dep = DAG(
+    dag_id=’’,
+    default_args=default_args,
+    description=’adding dependency btw weekly & daily dags’,
+    schedule_interval= '45 9 * * *',
+    start_date=datetime(2021, 6, 1)
+
+)
+#getting check if daily task gets completed
+daily_task_sensor = ExternalTaskSensor(
+            task_id=’daily_task_sensor’,
+            external_dag_id=’last_dag_id’,
+            external_task_id=None,
+            check_existence=True
+)
+
+#getting check if weekly task gets completed
+weekly_task_sensor = ExternalTaskSensor(
+            task_id=’weekly_task_sensor’,
+            external_dag_id=’last_dag_id1’,
+            external_task_id=None,  
+            check_existence=True,
+            execution_delta=timedelta(days=week_day) 
+)
+
+#dummy task
+final_task= DummyOperator(
+task_id='final_task',
+dag=dep
+)
+
+#after both dags completed then only last task will ran
+[daily_task_sensor,weekly_task_sensor]>> final_task
