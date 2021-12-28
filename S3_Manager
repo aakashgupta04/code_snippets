@@ -1,5 +1,5 @@
 
-# importing awswrangler libary as wr
+# importing awswrangler library as wr
 import awswrangler as wr
 
 # to list files from S3 
